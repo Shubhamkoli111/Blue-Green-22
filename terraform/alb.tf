@@ -15,7 +15,15 @@ resource "aws_alb" "alb" {
 # ALB TARGET GROUP
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "aws_alb_target_group" "trgp" {
+resource "aws_alb_target_group" "tg-blue" {
+  name        = "${var.stack}-tgrp"
+  port        = 8080
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.main.id
+  target_type = "ip"
+}
+
+resource "aws_alb_target_group" "tg-green" {
   name        = "${var.stack}-tgrp"
   port        = 8080
   protocol    = "HTTP"
@@ -29,11 +37,22 @@ resource "aws_alb_target_group" "trgp" {
 
 resource "aws_alb_listener" "alb-listener" {
   load_balancer_arn = aws_alb.alb.id
+  port              = "8080"
+  protocol          = "HTTP"
+
+  default_action {
+    target_group_arn = aws_alb_target_group.tg-blue.id
+    type             = "forward"
+  }
+}
+
+resource "aws_alb_listener" "alb-listener" {
+  load_balancer_arn = aws_alb.alb.id
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
-    target_group_arn = aws_alb_target_group.trgp.id
+    target_group_arn = aws_alb_target_group.tg-green.id
     type             = "forward"
   }
 }
